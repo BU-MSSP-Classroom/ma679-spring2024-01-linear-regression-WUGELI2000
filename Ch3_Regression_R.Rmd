@@ -291,8 +291,13 @@ Here are few rules:
 - You need to explain why you added each variable.
 
 ```{r,eval=FALSE,echo=show_code}
-lmfit_2008<- # ["your model here"] # use ames_raw_2008
+lmfit_2008 <- lm(formula = log(SalePrice) ~ log(`Gr Liv Area`) + log(`Year Built`) + log(`Lot Area`), ames_raw_2008)
+# ["your model here"] # use ames_raw_2008
+summary(lmfit_2008)
 ```
+The reason I add log(`Gr Liv Area`), log(`Year Built`) and log(`Lot Area`) is the reason that I think area and year will influence the sale price intuition. So I used forward selection and first add `Gr Liv Area` in the model, I found that p-value is small so this means that `Gr Liv Area` is a significant predictor, then I add `Year Built` and `Lot Area` for the same reason.
+
+
 
 When you decide on your model use the following to come up with your test loss.
 ```{r,eval=FALSE,echo=show_code}
@@ -307,11 +312,12 @@ Try to answer the following additional questions.
 
 Your code:
 ```{r,echo=TRUE}
-#
+# I think this problem do not need to use code
 #
 ```
 
 Your answer:
+I think my fit is a good fit, since the first reason is that the p-value is very small, means all predictors is significant. But I think my model can be improved since my model use forward section but not finish it. I can choose more predictors and try to find whether the p-value is significant or not, if p-value is good, I can add in my model. Also, in this model, I am not consider the interaction term.
 
 ~~~
 Please write your answer in full sentences.
@@ -324,11 +330,12 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
+# I think this problem do not need to use code
 #
 ```
 
 Your answer:
+I think in this problem, you need to consider in cases, if the model is already overfitting, so we need to reduce some predictors, it means that we should not include all the predictors. However, if the model is underfitting, we can add more predictors, it means that we can include all the predictors, but we still need to consider whether overfitting or underfitting after include all the predictors.
 
 ~~~
 Please write your answer in full sentences.
@@ -341,11 +348,12 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+lmfit_2008_2 <- lm(formula = log(`SalePrice`) ~ log(`Gr Liv Area`) * log(`Lot Area`) + log(`Year Built`), data = ames_raw_2008)
+summary(lmfit_2008_2)
 ```
 
 Your answer:
+I think in my previous model, I do not use interaction term. If I change my model to the model above. This is a model with interaction. But I think this interaction do not make sense since p-value is huge, and it means the interaction term is not significant. It's a positive interaction term. 
 
 ~~~
 Please write your answer in full sentences.
@@ -358,12 +366,15 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+lmfit_2008_3 <- lm(formula = log(SalePrice) ~ poly(log(`Gr Liv Area`), 3, raw=TRUE) + 
+                                             poly(log(`Year Built`), 3, raw=TRUE) + 
+                                             poly(log(`Lot Area`), 3, raw=TRUE), 
+                 data = ames_raw_2008)
+summary(lmfit_2008_3)
 ```
 
 Your answer:
-
+I think the model output indicates that there is statistically significant evidence of a non-linear association between 'Lot Area' and the logarithm of the sale price, while evidence for non-linear associations with 'Gr Liv Area' and 'Year Built' is weaker but still potentially suggestive. It's important to consider these results in the context of the dataset and the domain knowledge about the variables involved.
 ~~~
 Please write your answer in full sentences.
 
@@ -373,12 +384,29 @@ Please write your answer in full sentences.
 - What are the top 5 houses that are most over priced based on your model?
 
 Your code:
+```{r}
+lmfit_2008_1 <- lm(formula = log(SalePrice) ~ log(`Gr Liv Area`) + log(`Year Built`) + log(`Lot Area`), ames_raw_2008)
+```
+
+
 ```{r,echo=TRUE}
-#
-#
+predicted_log_prices1 <- predict(lmfit_2008_1, newdata = ames_raw_2008)
+actual_log_prices1 <- log(ames_raw_2008$SalePrice)
+
+residuals_log_scale1 <- actual_log_prices1 - predicted_log_prices1
+
+predicted_prices1 <- exp(predicted_log_prices1)
+actual_prices1 <- exp(actual_log_prices1)
+overprice_amount1 <- actual_prices1 - predicted_prices1
+
+ames_raw_2008$overprice_amount <- overprice_amount1
+
+top_overpriced_houses <- ames_raw_2008[order(-ames_raw_2008$overprice_amount), ][1:5, ]
+top_overpriced_houses
 ```
 
 Your answer:
+The top 5 houses that are most over priced based on your model is order 1768, 1761, 2667, 1638, and 2333.
 
 ~~~
 Please write your answer in full sentences.
@@ -390,11 +418,24 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+predicted_log_prices2 <- predict(lmfit_2008_1, newdata = ames_raw_2008)
+actual_log_prices2 <- log(ames_raw_2008$SalePrice)
+
+residuals_log_scale2 <- actual_log_prices2 - predicted_log_prices2
+
+predicted_prices2 <- exp(predicted_log_prices2)
+actual_prices2 <- exp(actual_log_prices2)
+underprice_amount2 <- actual_prices2 - predicted_prices2
+
+ames_raw_2008$underprice_amount2 <- underprice_amount2
+
+top_deals_houses <- ames_raw_2008[order(ames_raw_2008$underprice_amount2), ][1:5, ]
+top_deals_houses
 ```
 
 Your answer:
+
+The top 5 houses that are most over priced based on your model is order 2181, 2182, 1916, 2299, and 2904.
 
 ~~~
 Please write your answer in full sentences.
@@ -410,8 +451,13 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+library(ISLR)
+data("Auto")
+```
+
+```{r}
+auto_fit <- lm(mpg ~ horsepower, data = Auto)
+summary(auto_fit)
 ```
 
 Your answer:
@@ -427,19 +473,30 @@ Comment on the output.
 For example:
 i. Is there a relationship between the predictor and the response?
 
+A: Yes
+
+
 ii. How strong is the relationship between the predictor and the response?
+
+A: It's very strong, since p-value is very small.
+
 
 iii. Is the relationship between the predictor and the response positive or negative?
 
+A: A negative relationship.
+
+
 iv. What is the predicted mpg associated with a horsepower of 98? What are the associated 95% confidence and prediction intervals?
+
+A: -0.157845 +/- 1.96 * 0.006446
 
 (b) Plot the response and the predictor. Use the `abline()` function to display the least squares regression line.
 
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+plot(Auto$horsepower, Auto$mpg, xlab = "Horsepower", ylab = "MPG", main = "MPG vs Horsepower")
+abline(auto_fit, col = "blue")
 ```
 
 Your answer:
@@ -454,10 +511,11 @@ Please write your answer in full sentences.
 (c) Use the `plot()` function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with the fit.
 
 Your code:
-```{r,echo=TRUE}
-#
-#
+``````{r, echo=TRUE, fig.width=8, fig.height=6}
+par(mfrow = c(2, 2))
+plot(auto_fit)
 ```
+Residuals vs fitted curve shows some curvature, which could indicate non-linearity in the relationship between predictors and the response variable.
 
 Your answer:
 
@@ -474,8 +532,8 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+library(lattice)
+splom(~Auto)
 ```
 
 Your answer:
@@ -493,8 +551,9 @@ cor() which is qualitative.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+Auto_numeric <- Auto[, sapply(Auto, is.numeric)]
+correlation_matrix <- cor(Auto_numeric)
+correlation_matrix
 ```
 
 Your answer:
@@ -512,8 +571,11 @@ the predictors. Use the summary() function to print the results.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+library(dplyr)
+AutoWithoutName <- Auto |>
+  select(!name)
+auto_multi_lm <- lm(mpg ~ ., data = AutoWithoutName)
+summary(auto_multi_lm)
 ```
 
 Your answer:
@@ -527,19 +589,28 @@ Please write your answer in full sentences.
 
 Comment on the output. For instance:
 i. Is there a relationship between the predictors and the response?
+
+A: Yes
+
 ii. Which predictors appear to have a statistically significant relationship to the response?
 
+A: Displacement, weight, year and origin.
+
 iii. What does the coefficient for the year variable suggest?
+
+A: The coefficient for the 'year' variable is 0.750773, which is positive and statistically significant (p-value < 2e-16). This suggests that, on average, for each additional year, the miles per gallon (mpg) of a car increases by approximately 0.751, holding all other variables constant. In other words, newer cars in the dataset are associated with better fuel efficiency.
 
 (d) Use the plot() function to produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
 
 Your code:
-```{r,echo=TRUE}
-#
-#
+```{r, echo=TRUE, fig.width=8, fig.height=6}
+par(mfrow = c(2, 2))
+plot(auto_multi_lm)
 ```
 
 Your answer:
+
+A: There are potential outliers and influential observations that may warrant further investigation. 
 
 ~~~
 Please write your answer in full sentences.
@@ -551,11 +622,14 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+full_model_with_interactions <- lm(mpg ~ .^2, data = AutoWithoutName)
+
+summary(full_model_with_interactions)
 ```
 
 Your answer:
+
+A: Yes, displacement:year, acceleration:year and acceleration:origin are appear to be statistically significant
 
 ~~~
 Please write your answer in full sentences.
@@ -566,14 +640,23 @@ Please write your answer in full sentences.
 
 (f) Try a few different transformations of the variables, such as $log(X)$, $\sqrt{X}$, $X^2$. Comment on your findings.
 
+```{r}
+AutoWithoutName_log <- data.frame(lapply(AutoWithoutName[, -which(names(AutoWithoutName) == "mpg")], log), mpg = AutoWithoutName$mpg)
+
+full_model_with_log_transformations <- lm(log(mpg) ~ ., data = AutoWithoutName_log)
+summary(full_model_with_log_transformations)
+```
+In log transformation, cylinders and displacement are not significant, however, cylinders, horsepower and acceleration in the model which not transform are not significant.
+
 
 This question should be answered using the Carseats data set.
 (a) Fit a multiple regression model to predict Sales using Price, Urban, and US.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+data("Carseats")
+mult_fit <- lm(Sales ~ Price + Urban + US, data = Carseats)
+summary(mult_fit)
 ```
 
 Your answer:
@@ -594,6 +677,11 @@ Your code:
 
 Your answer:
 
+A: Price: This coefficient suggests that for each unit increase in Price, Sales are expected to decrease by 0.054459 units, holding all other variables constant. This negative relationship implies that as the price of a car seat goes up, sales tend to go down.
+
+UrbanYes: This is the difference in Sales when a store is in an urban area (UrbanYes = 1) compared to a non-urban area (UrbanYes = 0), holding all else constant. The negative coefficient suggests that sales are lower in urban areas by 0.021916 units compared to non-urban areas. However, the high p-value (0.936) indicates that this coefficient is not statistically significant, and we cannot confidently say that being in an urban area affects car seat sales.
+
+USYes: This is the difference in Sales when a store is in the US (USYes = 1) compared to stores not in the US (USYes = 0), holding all else constant. The positive coefficient suggests that sales are higher in the US by 1.200573 units. The low p-value (4.86e-06) indicates that this effect is statistically significant, and being in the US is associated with an increase in car seat sales.
 ~~~
 Please write your answer in full sentences.
 
@@ -610,6 +698,8 @@ Your code:
 
 Your answer:
 
+Sales = 13.043469 + (-0.054459) * Price + (-0.021916) * UrbanYes + 1.200573 * USYes + ε
+
 ~~~
 Please write your answer in full sentences.
 
@@ -619,6 +709,8 @@ Please write your answer in full sentences.
 (d) For which of the predictors can you reject the null hypothesis $H_0 :\beta_j = 0$?
 
 Your answer:
+
+Price and USYes
 
 ~~~
 Please write your answer in full sentences.
@@ -630,8 +722,9 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+smaller_fit <- lm(Sales ~ CompPrice + Income + Advertising + Price +
+                    ShelveLoc + Age, data = Carseats)
+summary(smaller_fit)
 ```
 
 Your answer:
@@ -646,7 +739,7 @@ Please write your answer in full sentences.
 (f) How well do the models in (a) and (e) fit the data?
 
 
-Your answer:
+Your answer: I think (e) fit the data better, since all predictors in (e) is significant.
 
 ~~~
 Please write your answer in full sentences.
@@ -664,6 +757,8 @@ Your code:
 
 Your answer:
 
+Coefficient +/- 1.96 * standard error.
+
 ~~~
 Please write your answer in full sentences.
 
@@ -671,9 +766,13 @@ Please write your answer in full sentences.
 ~~~
 
 (h) Is there evidence of outliers or high leverage observations in the model from (e)?
+```{r, echo=TRUE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+plot(smaller_fit)
+```
 
 
-Your answer:
+Your answer: Based on the graphs, point 358 is the outlier.
 
 ~~~
 Please write your answer in full sentences.
